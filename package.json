@@ -1,0 +1,8 @@
+{
+  "dependencies": {
+    "firebase": "^10.7.1",
+    "firebase-admin": "^12.0.0",
+    "jquery": "^3.7.1",
+    "jsdom": "^23.0.1"
+  }
+}
