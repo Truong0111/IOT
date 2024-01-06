@@ -1,17 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Parking Lot Statistics</title>
-    <link rel="stylesheet" href="./styles.css">
-</head>
-<body>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
     <header>
-        <h1>Smart parking</h1>
+      <h1>Smart parking</h1>
     </header>
     <main>
-        <!-- <h2>Check log</h2>
+      <!-- <h2>Check log</h2>
         <div id="logInput">
             <label for="licensePlate">License Plate:</label>
             <input type="text" id="licensePlate" class="licensePlate_1" required>
@@ -34,39 +34,45 @@
                 
             </tbody>
         </table> -->
-        <!-- <h2>Add Vehicle</h2>
+      <!-- <h2>Add Vehicle</h2>
         <form id="scanVehicle">
             <label>License Plate:</label>
             <input type="text" id="licensePlate" class="licensePlate_2" required>
             <br>
             <button type="submit">Add Vehicle</button>
         </form> -->
-        <div>
-            <button id="testBtn">Test Data</button>
-        </div>
-        <div>
-            <label>Date:</label>
-            <input type="date" id="dateChoose" class="dateChoose" required>
-        </div>
-        <div>
-            <h3 id="statCountIn">Total count in:</h3>
-        </div>
-        <div>
-            <h3 id="statCountOut">Total count out:</h3>
-        </div>
-        <div>
-            <button id="showStatsBtn">Statstic</button>
-        </div>
-        <div id="divChart">
-            
-        </div>
+      <div>
+        <button id="testBtn">Test Data</button>
+        <br>
+        <button id="testBtnIn">Test Data In</button>
+        <br>
+        <input type="text" id="licensePlate_out" name="licensePlate" />
+        <br>
+        <button id="testBtnOut">Test Data Out</button>
+      </div>
+      <div>
+        <label>Date:</label>
+        <input type="date" id="dateChoose" class="dateChoose" required />
+      </div>
+      <div>
+        <h3 id="statCountIn">Total count in:</h3>
+      </div>
+      <div>
+        <h3 id="statCountOut">Total count out:</h3>
+      </div>
+      <div>
+        <button id="showStatsBtn">Statstic</button>
+      </div>
+      <div id="divChart"></div>
     </main>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
-    <!-- <script src="./app.js"></script> -->
+    <script src="./node_modules/circular-json/build/circular-json.js"></script>
+    <script src="./app.js"></script>
     <script src="./script.js"></script>
-</body>
+    <script src="./test.js"></script>
+  </body>
 </html>
