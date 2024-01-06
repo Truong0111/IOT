@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parking Lot Statistics</title>
+    <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+    <header>
+        <h1>Smart parking</h1>
+    </header>
+    <main>
+        <div>
+            <h3 id="statCurrentCount">Current total count:</h3>
+        </div>
+        <div>
+            <table id="analyticsTable">
+                <thead>
+                    <tr>
+                        <th>CMND/CCCD</th>
+                        <th>License Plate</th>
+                        <th>Entry Time</th>
+                        <th>Exit Time</th>
+                    </tr>
+                </thead>
+                <tbody id="analyticsData">
+                    <!-- Data inserted here -->
+                </tbody>
+            </table>
+        </div>
+    </main>
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+    <script src="./app.js"></script>
+</body>
+</html>

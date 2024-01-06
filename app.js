@@ -1,10 +1,8 @@
-// app.js
-
 const isBrowser = typeof window !== 'undefined';
 
 const fetchData = async () => {
     try {
-        const response = await fetch('http://localhost:3000/analytics');
+        const response = await fetch('http://localhost:3001/analytics');
         const data = await response.json();
         if (isBrowser) {
             displayData(data);
@@ -56,19 +54,19 @@ const displayData = (data) => {
 
         analyticsDataTbody.appendChild(tr);
         
-        currentTotalCount++;
+        if(data[key].entry_time && !data[key].exit_time){
+            currentTotalCount++;
+        }
     });
 
     statCurrentCountData.innerHTML = `Current total count: ${currentTotalCount}`;
 
 };
 
-// Mark fetchData as async
 const runFetchData = async () => {
     while (true) {
         await fetchData();
-        // Đặt thời gian chờ giữa các lần thực thi
-        await new Promise(resolve => setTimeout(resolve, 1000)); // Chờ 1 giây trước khi thực hiện lại
+        await new Promise(resolve => setTimeout(resolve, 1000)); 
     }
 };
 

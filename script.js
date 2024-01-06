@@ -112,8 +112,8 @@ $(document).ready(function () {
                 database.ref("parking_log/" + logId).update({
                   isCurrent: 0,
                   exit_time: moment()
-                  .add(Math.floor(Math.random() * 24 * 60 * 60), "seconds")
-                  .format("HH:mm:ss DD-MM-YYYY")
+                    .add(Math.floor(Math.random() * 24 * 60 * 60), "seconds")
+                    .format("HH:mm:ss DD-MM-YYYY"),
                 });
               }
             }
@@ -147,10 +147,7 @@ $(document).ready(function () {
   // Test Data button click event
   $("#testBtn").click(function () {
     // Generate a unique key for the new test data
-    const newTestDataKey = database
-      .ref()
-      .child("parking_log")
-      .push().key;
+    const newTestDataKey = database.ref().child("parking_log").push().key;
 
     const testData = {
       license_plate: generateLicensePlate(),
@@ -173,8 +170,21 @@ $(document).ready(function () {
 
   // Thêm sự kiện cho nút Thống kê
 
-  $("#showStatsBtn").click(function () {
+  var dataInByHour = {
+    labels: [],
+    datasets: [{
+      data: []
+    }]
+  };
 
+  var dataOutByHour = {
+    labels: [],
+    datasets: [{
+      data: []
+    }]
+  };
+
+  $("#showStatsBtn").click(function () {
     const dateChoose = $("#dateChoose").val();
 
     var totalIn = 0;
@@ -185,31 +195,42 @@ $(document).ready(function () {
 
     const statCountOut = $("#statCountOut");
 
+    var dateParts = dateChoose.split("-");
+    var formattedDate = dateParts[2] + "-" + dateParts[1] + "-" + dateParts[0];
+
     database
       .ref("parking_log")
       .once("value")
       .then(function (snapshot) {
         const logs = snapshot.val();
-
         for (const key in logs) {
           if (logs.hasOwnProperty(key)) {
-            var entry_date = logs[key].entry_time.substring(logs[key].entry_time.indexOf(" ") + 1);
-            var exit_date = logs[key].exit_time.substring(logs[key].exit_time.indexOf(" ") + 1);
-            var dateParts = dateChoose.split('-');
-            var formattedDate = dateParts[2] + '-' + dateParts[1] + '-' + dateParts[0];
+            var entry_date = logs[key].entry_time.substring(
+              logs[key].entry_time.indexOf(" ") + 1
+            );
+            var exit_date = logs[key].exit_time.substring(
+              logs[key].exit_time.indexOf(" ") + 1
+            );
 
-            
-
-            if(entry_date === formattedDate){
+            if (entry_date === formattedDate) {
               totalIn++;
             }
-            if(exit_date === formattedDate){
+            if (exit_date === formattedDate) {
               totalOut++;
             }
           }
         }
-        statCountIn.html(`<h3 id="statCountIn">Total count in: ${totalIn} </h3>`);
-        statCountOut.html(`<h3 id="statCountOut">Total count out: ${totalOut}</h3>`);
+
+        statCountIn.html(
+          `<h3 id="statCountIn">Total count in: ${totalIn} </h3>`
+        );
+        statCountOut.html(
+          `<h3 id="statCountOut">Total count out: ${totalOut}</h3>`
+        );
+
+        drawChartInOutInPie(totalIn, totalOut, formattedDate);
+
+        drawChartInOutByHour(dataInByHour, dataOutByHour, formattedDate);
       })
       .catch(function (error) {
         console.log(error);
@@ -260,5 +281,83 @@ $(document).ready(function () {
       .format("HH:mm:ss DD-MM-YYYY");
 
     return exit_time;
+  }
+
+  function drawChartInOutInPie(totalIn, totalOut, date) {
+    var divChart = $("#divChart");
+    if (totalIn == 0 && totalOut == 0) {
+      divChart.append(`<h3>Không có xe ra hoặc xe vào ngày ${date}</h3>`);
+      return;
+    }
+    divChart.empty();
+    divChart.append(
+      `<h3>Biểu đồ thể hiện số lượng xe vào và số lượng xe ra ngày ${date}</h3>`
+    );
+    divChart.append(
+      '<canvas class="statsChartInPie" width="300" height="300"></canvas>'
+    );
+    var canvas = $(".statsChartInPie");
+    var ctx = canvas[0].getContext("2d");
+    var data = {
+      labels: ["Total in", "Total out"],
+      datasets: [
+        {
+          data: [totalIn, totalOut],
+          backgroundColor: ["red", "blue"],
+        },
+      ],
+    };
+
+    var myPieChart = new Chart(ctx, {
+      type: "pie",
+      data: data,
+      options: {
+        align: "center",
+        responsive: false,
+        display: true,
+        title: {
+          align: "center",
+          display: true,
+          position: top,
+          text: "Pie Chart: In and out",
+        },
+      },
+    });
+  }
+
+  function drawChartInOutByHour(dataIn, dataOut, date) {
+    var divChart = $("#divChart");
+    if (totalIn == 0 && totalOut == 0) return;
+    divChart.append(
+      `<h3>Biểu đồ thể hiện số lượng xe theo giờ ngày ${date}</h3>`
+    );
+    divChart.append(
+      '<canvas class="statsChartInByHour" width="600" height="300"></canvas>'
+    );
+    var canvasIn = $(".statsChartInByHour");
+    var ctxIn = canvasIn[0].getContext("2d");
+
+    var chartIn = new Chart(ctxIn, {
+      type: "line",
+      data: dataIn,
+    });
+
+    divChart.append(
+      `<h3>Biểu đồ thể hiện số lượng xe ra theo giờ ngày ${date}</h3>`
+    );
+    divChart.append(
+      '<canvas class="statsChartOutByHour" width="600" height="300"></canvas>'
+    );
+    var canvasOut = $(".statsChartOutByHour");
+    var ctxOut = canvasOut[0].getContext("2d");
+    var chartOut = new Chart(ctxOut, {
+      type: "line",
+      data: dataOut,
+    });
+  }
+
+  function addData(oldData, newData) {
+    oldData.labels.push.apply(oldData.labels, newData.labels);
+    oldData.labels.push.apply(oldData.datasets, newData.datasets);
   }
 });
