@@ -23,10 +23,16 @@ function getDataDay(formattedDate) {
 $(document).ready(function () {
   $("#showStatsBtn").click(function () {
     const dateChoose = $("#dateChoose").val();
-    var dateParts = dateChoose.split("-");
-    var formattedDate = dateParts[2] + "-" + dateParts[1] + "-" + dateParts[0];
 
-    getDataDay(formattedDate);
+    if(dateChoose){
+      var dateParts = dateChoose.split("-");
+      var formattedDate = dateParts[2] + "-" + dateParts[1] + "-" + dateParts[0];
+  
+      getDataDay(formattedDate);
+    }
+    else{
+      alert("Vui lòng nhập ngày cần thống kê.");
+    }
   });
 });
 
@@ -38,19 +44,23 @@ function draw(formattedDate) {
   var totalOut = database.total_out;
   var dataInByHour = database.data_in_by_hour;
   var dataOutByHour = database.data_out_by_hour;
-  statCountIn.html(`<h3 id="statCountIn">Total count in: ${totalIn} </h3>`);
-  statCountOut.html(`<h3 id="statCountOut">Total count out: ${totalOut}</h3>`);
+  statCountIn.html(`<h3 id="statCountIn">Tổng số xe vào trong ngày ${formattedDate}: ${totalIn} </h3>`);
+  statCountOut.html(`<h3 id="statCountOut">Tổng số xe ra trong ngày ${formattedDate}: ${totalOut}</h3>`);
+
+  var divChart = $("#divChart");
+  divChart.empty();
+  if (totalIn == 0 && totalOut == 0) {
+    alert(`Không có xe ra hoặc xe vào ngày ${formattedDate}!`);
+    return;
+  }
 
   drawChartInOutInPie(totalIn, totalOut, formattedDate);
 
   drawChartInOutByHour(dataInByHour, dataOutByHour, formattedDate);
 }
+
 function drawChartInOutInPie(totalIn, totalOut, date) {
   var divChart = $("#divChart");
-  if (totalIn == 0 && totalOut == 0) {
-    divChart.append(`<h3>Không có xe ra hoặc xe vào ngày ${date}</h3>`);
-    return;
-  }
   divChart.empty();
   divChart.append(
     `<h3>Biểu đồ thể hiện số lượng xe vào và số lượng xe ra ngày ${date}</h3>`
@@ -61,7 +71,7 @@ function drawChartInOutInPie(totalIn, totalOut, date) {
   var canvas = $(".statsChartInPie");
   var ctx = canvas[0].getContext("2d");
   var data = {
-    labels: ["Total in", "Total out"],
+    labels: ["Tổng vào", "Tổng ra"],
     datasets: [
       {
         data: [totalIn, totalOut],

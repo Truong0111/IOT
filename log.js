@@ -72,13 +72,11 @@ runFetchData();
 $(document).ready(function () {
   $("#confirmLogBtn").click(function () {
     const licensePlateValue = $("#licensePlate").val();
-
     if (licensePlateValue) {
       retrieveAndDisplayData(licensePlateValue);
       $("#licensePlate").val("");
-      $("#cmnd").val("");
     } else {
-      alert("Vui lòng nhập ít nhất một giá trị.");
+      alert("Vui lòng nhập biển số xe.");
     }
   });
 
@@ -94,6 +92,7 @@ $(document).ready(function () {
         const exitTime = database[key].exit_time;
 
         displayVehicleInfo(licensePlate, entryTime, exitTime);
+        return;
       }
     });
   }
