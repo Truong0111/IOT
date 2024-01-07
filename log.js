@@ -63,7 +63,7 @@ const runFetchData = async () => {
   while (true) {
     await fetchData();
     await displayData();
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    await new Promise((resolve) => setTimeout(resolve, 5000));
   }
 };
 

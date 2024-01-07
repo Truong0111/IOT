@@ -23,7 +23,6 @@ function getDataDay(formattedDate) {
 $(document).ready(function () {
   $("#showStatsBtn").click(function () {
     const dateChoose = $("#dateChoose").val();
-
     if(dateChoose){
       var dateParts = dateChoose.split("-");
       var formattedDate = dateParts[2] + "-" + dateParts[1] + "-" + dateParts[0];
@@ -58,12 +57,15 @@ function draw(formattedDate) {
 
   drawChartInOutByHour(dataInByHour, dataOutByHour, formattedDate);
 }
-
 function drawChartInOutInPie(totalIn, totalOut, date) {
   var divChart = $("#divChart");
+  if (totalIn == 0 && totalOut == 0) {
+    divChart.append(`<h3>Không có xe ra hoặc xe vào ngày ${date}</h3>`);
+    return;
+  }
   divChart.empty();
   divChart.append(
-    `<h3>Biểu đồ thể hiện số lượng xe vào và số lượng xe ra ngày ${date}</h3>`
+    `<h3>Biểu đồ thể hiện số lượt xe vào và số lượt xe ra ngày ${date}</h3>`
   );
   divChart.append(
     '<canvas class="statsChartInPie" width="300" height="300"></canvas>'
@@ -100,7 +102,7 @@ function drawChartInOutInPie(totalIn, totalOut, date) {
 function drawChartInOutByHour(dataInByHour, dataOutByHour, date) {
   var divChart = $("#divChart");
   divChart.append(
-    `<h3>Biểu đồ thể hiện số lượng xe theo giờ ngày ${date}</h3>`
+    `<h3>Biểu đồ thể hiện số lượt xe theo giờ ngày ${date}</h3>`
   );
   divChart.append(
     '<canvas class="statsChartInByHour" width="600" height="300"></canvas>'
@@ -114,7 +116,7 @@ function drawChartInOutByHour(dataInByHour, dataOutByHour, date) {
   });
 
   divChart.append(
-    `<h3>Biểu đồ thể hiện số lượng xe ra theo giờ ngày ${date}</h3>`
+    `<h3>Biểu đồ thể hiện số lượt xe ra theo giờ ngày ${date}</h3>`
   );
   divChart.append(
     '<canvas class="statsChartOutByHour" width="600" height="300"></canvas>'
