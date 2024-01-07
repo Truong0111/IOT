@@ -58,7 +58,6 @@ function startServerFirebase() {
   // Route để lấy dữ liệu từ Firebase
   app.get("/parking_log", async (req, res) => {
     try {
-      console.log(req.body);
       const snapshot = await database.ref("/parking_log").once("value");
       const data = snapshot.val();
       res.json(data);
@@ -70,134 +69,136 @@ function startServerFirebase() {
 
   app.get("/parking_log_day", async (req, res) => {
     try {
-      var receiveData = req.body;
-      console.log(receiveData);
-      if(receiveData.date == undefined || receiveData.date == null) return;
-      var dateParts = receiveData.date.split("-");
-      var formattedDate =
-        dateParts[2] + "-" + dateParts[1] + "-" + dateParts[0];
-
-      var totalIn = 0;
-      var totalOut = 0;
-      var dataIn = [
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-      ];
-      var dataOut = [
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-      ];
-      var dataInByHour = {
-        labels: [
-          "00",
-          "01",
-          "02",
-          "03",
-          "04",
-          "05",
-          "06",
-          "07",
-          "08",
-          "09",
-          "10",
-          "11",
-          "12",
-          "13",
-          "14",
-          "15",
-          "16",
-          "17",
-          "18",
-          "19",
-          "20",
-          "21",
-          "22",
-          "23",
-        ],
-        datasets: [
-          {
-            label: "Số lượng xe vào",
-            data: [],
-          },
-        ],
-      };
-      var dataOutByHour = {
-        labels: [
-          "00",
-          "01",
-          "02",
-          "03",
-          "04",
-          "05",
-          "06",
-          "07",
-          "08",
-          "09",
-          "10",
-          "11",
-          "12",
-          "13",
-          "14",
-          "15",
-          "16",
-          "17",
-          "18",
-          "19",
-          "20",
-          "21",
-          "22",
-          "23",
-        ],
-        datasets: [
-          {
-            label: "Số lượng xe ra",
-            data: [],
-          },
-        ],
-      };
-
+      var receiveData = req.query;
       var sendData;
-
-      database
-        .ref("parking_log")
-        .once("value")
-        .then(function (snapshot) {
-          const logs = snapshot.val();
-          for (const key in logs) {
-            if (logs.hasOwnProperty(key)) {
-              var entry_date = logs[key].entry_time.substring(
-                logs[key].entry_time.indexOf(" ") + 1
-              );
-              var exit_date = logs[key].exit_time.substring(
-                logs[key].exit_time.indexOf(" ") + 1
-              );
-
-              if (entry_date === formattedDate) {
-                totalIn++;
-                var entryHour = logs[key].entry_time.substring(0, 2);
-                dataIn[Number(entryHour)]++;
-              }
-              if (exit_date === formattedDate) {
-                totalOut++;
-                var exitHour = logs[key].exit_time.substring(0, 2);
-                dataOut[Number(exitHour)]++;
+      if (receiveData.date == undefined || receiveData.date == null){
+        sendData = {error: "07-01-2024"};
+      }
+      else {
+        var dateParts = receiveData.date.split("-");
+        var formattedDate = dateParts[0] + "-" + dateParts[1] + "-" + dateParts[2];
+        
+        var totalIn = 0;
+        var totalOut = 0;
+        var dataIn = [
+          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+          0,
+        ];
+        var dataOut = [
+          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+          0,
+        ];
+        var dataInByHour = {
+          labels: [
+            "00",
+            "01",
+            "02",
+            "03",
+            "04",
+            "05",
+            "06",
+            "07",
+            "08",
+            "09",
+            "10",
+            "11",
+            "12",
+            "13",
+            "14",
+            "15",
+            "16",
+            "17",
+            "18",
+            "19",
+            "20",
+            "21",
+            "22",
+            "23",
+          ],
+          datasets: [
+            {
+              label: "Số lượng xe vào",
+              data: [],
+            },
+          ],
+        };
+        var dataOutByHour = {
+          labels: [
+            "00",
+            "01",
+            "02",
+            "03",
+            "04",
+            "05",
+            "06",
+            "07",
+            "08",
+            "09",
+            "10",
+            "11",
+            "12",
+            "13",
+            "14",
+            "15",
+            "16",
+            "17",
+            "18",
+            "19",
+            "20",
+            "21",
+            "22",
+            "23",
+          ],
+          datasets: [
+            {
+              label: "Số lượng xe ra",
+              data: [],
+            },
+          ],
+        };
+        database
+          .ref("parking_log")
+          .once("value")
+          .then(function (snapshot) {
+            const logs = snapshot.val();
+            for (const key in logs) {
+              if (logs.hasOwnProperty(key)) {
+                var entry_date = logs[key].entry_time.substring(
+                  logs[key].entry_time.indexOf(" ") + 1
+                );
+                var exit_date = logs[key].exit_time.substring(
+                  logs[key].exit_time.indexOf(" ") + 1
+                );
+                if (entry_date === formattedDate) {
+                  totalIn++;
+                  var entryHour = logs[key].entry_time.substring(0, 2);
+                  dataIn[Number(entryHour)]++;
+                }
+                if (exit_date === formattedDate) {
+                  totalOut++;
+                  var exitHour = logs[key].exit_time.substring(0, 2);
+                  dataOut[Number(exitHour)]++;
+                }
               }
             }
-          }
 
-          addData(dataIn, dataInByHour);
-          addData(dataOut, dataOutByHour);
+            addData(dataIn, dataInByHour);
+            addData(dataOut, dataOutByHour);
+            
+            sendData = {
+              "total_in": totalIn,
+              "total_out": totalOut,
+              "data_in_by_hour": dataInByHour,
+              "data_out_by_hour": dataOutByHour,
+            };
+            res.json(sendData);
+          })
+          .catch(function (error) {
+            res.json({error: "07-01-2024"});
+            console.log(error);
+          });
+      }
 
-          sendData = {
-            total_in: totalIn,
-            total_out: totalOut,
-            data_in_by_hour: dataInByHour,
-            data_out_by_hour: dataOutByHour,
-          };
-        })
-        .catch(function (error) {
-          console.log(error);
-        });
-
-      res.json(sendData);
     } catch (error) {
       console.log(error);
       res.status(500).json({ error: "Internal Server Error" });

@@ -5,7 +5,6 @@ const fetchData = async () => {
     url: "http://localhost:3001/parking_log",
     method: "GET",
     dataType: "json",
-    body: {date: "07-01-2023"},
     async: false,
     success: function (data) {
       database = data;
