@@ -157,7 +157,7 @@ function startServerFirebase() {
           ],
         };
         database
-          .ref("parking_log")
+          .ref("/parking_log")
           .once("value")
           .then(function (snapshot) {
             const logs = snapshot.val();
@@ -218,7 +218,7 @@ function startServerFirebase() {
       const time = moment().format("HH:mm:ss DD-MM-YYYY");
 
       database
-        .ref("parking_log")
+        .ref("/parking_log")
         .orderByChild("license_plate")
         .equalTo(license_plate)
         .once("value", function (snapshot) {
@@ -245,18 +245,20 @@ function startServerFirebase() {
             // Nếu có bản ghi không có entry_time hoặc exit_time, không thêm bản ghi mới
             if (!isRecordEntryWithoutTime) {
               // Thêm một dữ liệu mới
-              database.ref("parking_log").push({
+              database.ref("/parking_log").push({
                 isCurrent: 1,
                 license_plate: license_plate,
                 entry_time: time,
+                exit_time: "",
               });
             }
           } else {
             // Nếu không tồn tại, thêm một dữ liệu mới
-            database.ref("parking_log").push({
+            database.ref("/parking_log").push({
               isCurrent: 1,
               license_plate: license_plate,
               entry_time: time,
+              exit_time: "",
             });
           }
         });
