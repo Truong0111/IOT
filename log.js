@@ -56,7 +56,7 @@ const displayData = () => {
     }
   });
 
-  statCurrentCountData.innerHTML = `Current total count: ${currentTotalCount}`;
+  statCurrentCountData.innerHTML = `Tổng số xe hiện tại trong bãi: ${currentTotalCount}`;
 };
 
 const runFetchData = async () => {
