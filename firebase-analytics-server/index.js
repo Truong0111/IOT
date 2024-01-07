@@ -1,5 +1,7 @@
 import admin from "firebase-admin";
 import express from "express";
+import moment from "moment";
+import bodyParser from "body-parser";
 
 function startServerFirebase() {
   const serviceAccount = {
@@ -51,10 +53,13 @@ function startServerFirebase() {
     next();
   });
 
+  app.use(bodyParser.json());
+
   // Route để lấy dữ liệu từ Firebase
-  app.get("/parking_log_json", async (req, res) => {
+  app.get("/parking_log", async (req, res) => {
     try {
-      const snapshot = await admin.database().ref("/parking_log").once("value");
+      console.log(req.body);
+      const snapshot = await database.ref("/parking_log").once("value");
       const data = snapshot.val();
       res.json(data);
     } catch (error) {
@@ -63,9 +68,198 @@ function startServerFirebase() {
     }
   });
 
-  app.get("/database_key", async (req, res) => {
+  app.get("/parking_log_day", async (req, res) => {
     try {
-      res.json(firebaseConfig);
+      var receiveData = req.body;
+      console.log(receiveData);
+      if(receiveData.date == undefined || receiveData.date == null) return;
+      var dateParts = receiveData.date.split("-");
+      var formattedDate =
+        dateParts[2] + "-" + dateParts[1] + "-" + dateParts[0];
+
+      var totalIn = 0;
+      var totalOut = 0;
+      var dataIn = [
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      ];
+      var dataOut = [
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      ];
+      var dataInByHour = {
+        labels: [
+          "00",
+          "01",
+          "02",
+          "03",
+          "04",
+          "05",
+          "06",
+          "07",
+          "08",
+          "09",
+          "10",
+          "11",
+          "12",
+          "13",
+          "14",
+          "15",
+          "16",
+          "17",
+          "18",
+          "19",
+          "20",
+          "21",
+          "22",
+          "23",
+        ],
+        datasets: [
+          {
+            label: "Số lượng xe vào",
+            data: [],
+          },
+        ],
+      };
+      var dataOutByHour = {
+        labels: [
+          "00",
+          "01",
+          "02",
+          "03",
+          "04",
+          "05",
+          "06",
+          "07",
+          "08",
+          "09",
+          "10",
+          "11",
+          "12",
+          "13",
+          "14",
+          "15",
+          "16",
+          "17",
+          "18",
+          "19",
+          "20",
+          "21",
+          "22",
+          "23",
+        ],
+        datasets: [
+          {
+            label: "Số lượng xe ra",
+            data: [],
+          },
+        ],
+      };
+
+      var sendData;
+
+      database
+        .ref("parking_log")
+        .once("value")
+        .then(function (snapshot) {
+          const logs = snapshot.val();
+          for (const key in logs) {
+            if (logs.hasOwnProperty(key)) {
+              var entry_date = logs[key].entry_time.substring(
+                logs[key].entry_time.indexOf(" ") + 1
+              );
+              var exit_date = logs[key].exit_time.substring(
+                logs[key].exit_time.indexOf(" ") + 1
+              );
+
+              if (entry_date === formattedDate) {
+                totalIn++;
+                var entryHour = logs[key].entry_time.substring(0, 2);
+                dataIn[Number(entryHour)]++;
+              }
+              if (exit_date === formattedDate) {
+                totalOut++;
+                var exitHour = logs[key].exit_time.substring(0, 2);
+                dataOut[Number(exitHour)]++;
+              }
+            }
+          }
+
+          addData(dataIn, dataInByHour);
+          addData(dataOut, dataOutByHour);
+
+          sendData = {
+            total_in: totalIn,
+            total_out: totalOut,
+            data_in_by_hour: dataInByHour,
+            data_out_by_hour: dataOutByHour,
+          };
+        })
+        .catch(function (error) {
+          console.log(error);
+        });
+
+      res.json(sendData);
+    } catch (error) {
+      console.log(error);
+      res.status(500).json({ error: "Internal Server Error" });
+    }
+  });
+
+  // POST:
+  // data: {
+  //   license_plate: string
+  // }
+  app.post("/vehicle_in_out_post", async (req, res) => {
+    try {
+      const data = req.body;
+
+      const license_plate = data.license_plate;
+
+      const time = moment().format("HH:mm:ss DD-MM-YYYY");
+
+      database
+        .ref("parking_log")
+        .orderByChild("license_plate")
+        .equalTo(license_plate)
+        .once("value", function (snapshot) {
+          if (snapshot.exists()) {
+            // Nếu tồn tại, kiểm tra xem có bản ghi nào không có entry_time hoặc exit_time không
+            let isRecordEntryWithoutTime = false;
+
+            snapshot.forEach(function (childSnapshot) {
+              const logId = childSnapshot.key;
+              const record = childSnapshot.val();
+
+              if (!record.entry_time || !record.exit_time) {
+                isRecordEntryWithoutTime = true;
+                // Cập nhật exit_time cho bản ghi hiện tại (nếu cần)
+                if (!record.exit_time) {
+                  database.ref("parking_log/" + logId).update({
+                    isCurrent: 0,
+                    exit_time: time,
+                  });
+                }
+              }
+            });
+
+            // Nếu có bản ghi không có entry_time hoặc exit_time, không thêm bản ghi mới
+            if (!isRecordEntryWithoutTime) {
+              // Thêm một dữ liệu mới
+              database.ref("parking_log").push({
+                isCurrent: 1,
+                license_plate: license_plate,
+                entry_time: time,
+              });
+            }
+          } else {
+            // Nếu không tồn tại, thêm một dữ liệu mới
+            database.ref("parking_log").push({
+              isCurrent: 1,
+              license_plate: license_plate,
+              entry_time: time,
+            });
+          }
+        });
+      res.json({ success: true, data: data });
     } catch (error) {
       console.error(error);
       res.status(500).json({ error: "Internal Server Error" });
@@ -78,3 +272,7 @@ function startServerFirebase() {
 }
 
 startServerFirebase();
+
+function addData(json, data) {
+  data.datasets[0].data = json;
+}

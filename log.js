@@ -1,13 +1,81 @@
-$(document).ready(function () {
-  const database = window.firebaseDatabase;
-  $("#confirmLogBtn").click(function () {
-    // Lấy giá trị từ cả hai ô nhập liệu
-    const licensePlateValue = $("#licensePlate").val();
-    const cmndValue = $("#cmnd").val();
+var database;
 
-    // Kiểm tra nếu có ít nhất một giá trị không rỗng
-    if (licensePlateValue || cmndValue) {
-      retrieveAndDisplayData(licensePlateValue, cmndValue);
+const fetchData = async () => {
+  $.ajax({
+    url: "http://localhost:3001/parking_log",
+    method: "GET",
+    dataType: "json",
+    body: {date: "07-01-2023"},
+    async: false,
+    success: function (data) {
+      database = data;
+      displayData(data);
+      console.log("Get data success!");
+    },
+    error: function (xhr, status, error) {
+      console.error(error);
+    },
+  });
+};
+
+const displayData = () => {
+  const analyticsDataTbody = document.getElementById("analyticsData");
+
+  const statCurrentCountData = document.getElementById("statCurrentCount");
+
+  if (!analyticsDataTbody || !statCurrentCountData) return;
+
+  analyticsDataTbody.innerHTML = "";
+  statCurrentCountData.innerHTML = "";
+
+  var currentTotalCount = 0;
+
+  if (database == undefined || database == null) {
+    statCurrentCountData.innerHTML = `Current total count: 0`;
+    return;
+  }
+
+  Object.keys(database).forEach((key) => {
+    const tr = document.createElement("tr");
+
+    const licensePlateTd = document.createElement("td");
+    licensePlateTd.textContent = database[key].license_plate;
+    tr.appendChild(licensePlateTd);
+
+    const entryTimeTd = document.createElement("td");
+    entryTimeTd.textContent = database[key].entry_time;
+    tr.appendChild(entryTimeTd);
+
+    const exitTimeTd = document.createElement("td");
+    exitTimeTd.textContent = database[key].exit_time;
+    tr.appendChild(exitTimeTd);
+
+    analyticsDataTbody.appendChild(tr);
+
+    if (database[key].entry_time && !database[key].exit_time) {
+      currentTotalCount++;
+    }
+  });
+
+  statCurrentCountData.innerHTML = `Current total count: ${currentTotalCount}`;
+};
+
+const runFetchData = async () => {
+  while (true) {
+    await fetchData();
+    await displayData();
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+  }
+};
+
+runFetchData();
+
+$(document).ready(function () {
+  $("#confirmLogBtn").click(function () {
+    const licensePlateValue = $("#licensePlate").val();
+
+    if (licensePlateValue) {
+      retrieveAndDisplayData(licensePlateValue);
       $("#licensePlate").val("");
       $("#cmnd").val("");
     } else {
@@ -15,54 +83,25 @@ $(document).ready(function () {
     }
   });
 
-  // Hàm lấy dữ liệu từ Firebase và hiển thị lên trang web
-  function retrieveAndDisplayData(licensePlateValue, cmndValue) {
+  function retrieveAndDisplayData(licensePlateValue) {
     $("#vehicleTable tbody").empty();
-    // Lấy dữ liệu từ Firebase theo giá trị biển số xe hoặc CMND
-    database
-      .ref("parking_log")
-      .orderByChild("license_plate")
-      .equalTo(licensePlateValue)
-      .once("value")
-      .then(function (snapshot) {
-        const logs = snapshot.val();
 
-        // Nếu không tìm thấy dữ liệu theo biển số xe, thử tìm theo CMND
-        if (!logs) {
-          return database
-            .ref("parking_log")
-            .orderByChild("cmnd")
-            .equalTo(cmndValue)
-            .once("value");
-        }
+    Object.keys(database).forEach((key) => {
+      if (!database[key]);
+      if (!database[key].license_plate);
+      if (database[key].license_plate === licensePlateValue) {
+        const licensePlate = database[key].license_plate;
+        const entryTime = database[key].entry_time;
+        const exitTime = database[key].exit_time;
 
-        return snapshot;
-      })
-      .then(function (snapshot) {
-        const logs = snapshot.val();
-
-        // Hiển thị thông tin lên trang web
-        for (const key in logs) {
-          if (logs.hasOwnProperty(key)) {
-            const licensePlate = logs[key].license_plate;
-            const cmnd = logs[key].cmnd;
-            const entryTime = logs[key].entry_time;
-            const exitTime = logs[key].exit_time;
-
-            // Hiển thị thông tin lên trang web
-            displayVehicleInfo(licensePlate, cmnd, entryTime, exitTime);
-          }
-        }
-      })
-      .catch(function (error) {
-        console.error("Error retrieving data:", error);
-      });
+        displayVehicleInfo(licensePlate, entryTime, exitTime);
+      }
+    });
   }
 
-  // Hàm hiển thị thông tin trên trang web
-  function displayVehicleInfo(licensePlate, cmnd, entryTime, exitTime) {
+  function displayVehicleInfo(licensePlate, entryTime, exitTime) {
     const tableBody = $("#vehicleTable tbody");
-    const newRow = `<tr><td>${licensePlate}</td><td>${cmnd}</td><td>${entryTime}</td><td>${exitTime}</td></tr>`;
+    const newRow = `<tr><td>${licensePlate}</td><td>${entryTime}</td><td>${exitTime}</td></tr>`;
     tableBody.prepend(newRow);
   }
 });

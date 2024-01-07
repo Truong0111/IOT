@@ -16,16 +16,12 @@
             <label for="licensePlate">License Plate:</label>
             <input type="text" id="licensePlate" class="licensePlate_1" required>
             <br> 
-            <label for="cmnd">CMND:</label>
-            <input type="text" id="cmnd" name="cmnd" required>
-            <br> 
             <button id="confirmLogBtn">Confirm</button>
         </div>
         <table id="vehicleTable">
             <thead>
                 <tr>
                     <th>Biển số xe</th>
-                    <th>CMND</th>
                     <th>Thời gian vào</th>
                     <th>Thời gian ra</th>
                 </tr>
@@ -42,7 +38,6 @@
                 <thead>
                     <tr>
                         <th>Biển số xe</th>
-                        <th>CMND/CCCD</th>
                         <th>Thời gian vào</th>
                         <th>Thời gian ra</th>
                     </tr>
@@ -58,7 +53,6 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
     <script src="./node_modules/circular-json/build/circular-json.js"></script>
-    <script src="./app.js"></script>
     <script src="./log.js"></script>
 </body>
 </html>
